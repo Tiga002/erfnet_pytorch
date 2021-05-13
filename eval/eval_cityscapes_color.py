@@ -1,4 +1,4 @@
-# Code to produce colored segmentation output in Pytorch for all cityscapes subsets  
+# Code to produce colored segmentation output in Pytorch for all cityscapes subsets
 # Sept 2017
 # Eduardo Romera
 #######################
@@ -39,7 +39,7 @@ target_transform_cityscapes = Compose([
 ])
 
 cityscapes_trainIds2labelIds = Compose([
-    Relabel(19, 255),  
+    Relabel(19, 255),
     Relabel(18, 33),
     Relabel(17, 32),
     Relabel(16, 31),
@@ -74,7 +74,7 @@ def main(args):
     #Import ERFNet model from the folder
     #Net = importlib.import_module(modelpath.replace("/", "."), "ERFNet")
     model = ERFNet(NUM_CLASSES)
-  
+
     model = torch.nn.DataParallel(model)
     if (not args.cpu):
         model = model.cuda()
@@ -124,15 +124,15 @@ def main(args):
 
         filenameSave = "./save_color/" + filename[0].split("leftImg8bit/")[1]
         os.makedirs(os.path.dirname(filenameSave), exist_ok=True)
-        #image_transform(label.byte()).save(filenameSave)      
-        label_save = ToPILImage()(label_color)           
-        label_save.save(filenameSave) 
+        #image_transform(label.byte()).save(filenameSave)
+        label_save = ToPILImage()(label_color)
+        label_save.save(filenameSave)
 
         if (args.visualize):
             vis.image(label_color.numpy())
         print (step, filenameSave)
 
-    
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()

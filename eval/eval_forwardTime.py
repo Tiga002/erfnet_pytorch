@@ -54,7 +54,6 @@ def main(args):
             fwt = time.time() - start_time
             time_train.append(fwt)
             print ("Forward time per img (b=%d): %.3f (Mean: %.3f)" % (args.batch_size, fwt/args.batch_size, sum(time_train) / len(time_train) / args.batch_size))
-        
         time.sleep(1)   #to avoid overheating the GPU too much
         i+=1
 
