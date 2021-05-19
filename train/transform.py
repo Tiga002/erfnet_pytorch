@@ -28,7 +28,7 @@ def colormap_cityscapes(n):
     cmap[17,:] = np.array([  0,  0,230])
     cmap[18,:] = np.array([ 119, 11, 32])
     cmap[19,:] = np.array([ 0,  0,  0])
-    
+
     return cmap
 
 

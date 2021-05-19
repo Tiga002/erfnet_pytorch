@@ -14,7 +14,7 @@ def is_image(filename):
     return any(filename.endswith(ext) for ext in EXTENSIONS)
 
 def is_label(filename):
-    return filename.endswith("_labelTrainIds.png")
+    return filename.endswith("_gtFine_color.png")
 
 def image_path(root, basename, extension):
     return os.path.join(root, f'{basename}{extension}')
@@ -62,11 +62,11 @@ class VOC12(Dataset):
 class cityscapes(Dataset):
 
     def __init__(self, root, co_transform=None, subset='train'):
-        self.images_root = os.path.join(root, 'leftImg8bit/')
-        self.labels_root = os.path.join(root, 'gtFine/')
-        
-        self.images_root += subset
-        self.labels_root += subset
+        self.images_root = os.path.join(root, 'leftImg8bit/' + subset + '/zurich')
+        self.labels_root = os.path.join(root, 'gtFine/' + subset + '/zurich')
+
+        #self.images_root += subset
+        #self.labels_root += subset
 
         print (self.images_root)
         #self.filenames = [image_basename(f) for f in os.listdir(self.images_root) if is_image(f)]
@@ -77,6 +77,7 @@ class cityscapes(Dataset):
         #self.filenamesGt = [image_basename(f) for f in os.listdir(self.labels_root) if is_image(f)]
         self.filenamesGt = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(self.labels_root)) for f in fn if is_label(f)]
         self.filenamesGt.sort()
+
 
         self.co_transform = co_transform # ADDED THIS
 
@@ -97,4 +98,3 @@ class cityscapes(Dataset):
 
     def __len__(self):
         return len(self.filenames)
-

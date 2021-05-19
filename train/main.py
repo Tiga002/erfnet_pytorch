@@ -28,6 +28,10 @@ from iouEval import iouEval, getColorEntry
 
 from shutil import copyfile
 
+import sys
+sys.path.append("..")
+import custom_datasets
+
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
 
@@ -52,15 +56,15 @@ class MyCoTransform(object):
             if (hflip < 0.5):
                 input = input.transpose(Image.FLIP_LEFT_RIGHT)
                 target = target.transpose(Image.FLIP_LEFT_RIGHT)
-            
+
             #Random translation 0-2 pixels (fill rest with padding
-            transX = random.randint(-2, 2) 
+            transX = random.randint(-2, 2)
             transY = random.randint(-2, 2)
 
             input = ImageOps.expand(input, border=(transX,transY,0,0), fill=0)
             target = ImageOps.expand(target, border=(transX,transY,0,0), fill=255) #pad label filling with 255
             input = input.crop((0, 0, input.size[0]-transX, input.size[1]-transY))
-            target = target.crop((0, 0, target.size[0]-transX, target.size[1]-transY))   
+            target = target.crop((0, 0, target.size[0]-transX, target.size[1]-transY))
 
         input = ToTensor()(input)
         if (self.enc):
@@ -90,50 +94,51 @@ def train(args, model, enc=False):
 
     weight = torch.ones(NUM_CLASSES)
     if (enc):
-        weight[0] = 2.3653597831726	
-        weight[1] = 4.4237880706787	
-        weight[2] = 2.9691488742828	
-        weight[3] = 5.3442072868347	
-        weight[4] = 5.2983593940735	
-        weight[5] = 5.2275490760803	
-        weight[6] = 5.4394111633301	
-        weight[7] = 5.3659925460815	
-        weight[8] = 3.4170460700989	
-        weight[9] = 5.2414722442627	
-        weight[10] = 4.7376127243042	
-        weight[11] = 5.2286224365234	
-        weight[12] = 5.455126285553	
-        weight[13] = 4.3019247055054	
-        weight[14] = 5.4264230728149	
-        weight[15] = 5.4331531524658	
-        weight[16] = 5.433765411377	
-        weight[17] = 5.4631009101868	
+        weight[0] = 2.3653597831726
+        weight[1] = 4.4237880706787
+        weight[2] = 2.9691488742828
+        weight[3] = 5.3442072868347
+        weight[4] = 5.2983593940735
+        weight[5] = 5.2275490760803
+        weight[6] = 5.4394111633301
+        weight[7] = 5.3659925460815
+        weight[8] = 3.4170460700989
+        weight[9] = 5.2414722442627
+        weight[10] = 4.7376127243042
+        weight[11] = 5.2286224365234
+        weight[12] = 5.455126285553
+        weight[13] = 4.3019247055054
+        weight[14] = 5.4264230728149
+        weight[15] = 5.4331531524658
+        weight[16] = 5.433765411377
+        weight[17] = 5.4631009101868
         weight[18] = 5.3947434425354
     else:
-        weight[0] = 2.8149201869965	
-        weight[1] = 6.9850029945374	
-        weight[2] = 3.7890393733978	
-        weight[3] = 9.9428062438965	
-        weight[4] = 9.7702074050903	
-        weight[5] = 9.5110931396484	
-        weight[6] = 10.311357498169	
-        weight[7] = 10.026463508606	
-        weight[8] = 4.6323022842407	
-        weight[9] = 9.5608062744141	
-        weight[10] = 7.8698215484619	
-        weight[11] = 9.5168733596802	
-        weight[12] = 10.373730659485	
-        weight[13] = 6.6616044044495	
-        weight[14] = 10.260489463806	
-        weight[15] = 10.287888526917	
-        weight[16] = 10.289801597595	
-        weight[17] = 10.405355453491	
-        weight[18] = 10.138095855713	
+        weight[0] = 2.8149201869965
+        weight[1] = 6.9850029945374
+        weight[2] = 3.7890393733978
+        weight[3] = 9.9428062438965
+        weight[4] = 9.7702074050903
+        weight[5] = 9.5110931396484
+        weight[6] = 10.311357498169
+        weight[7] = 10.026463508606
+        weight[8] = 4.6323022842407
+        weight[9] = 9.5608062744141
+        weight[10] = 7.8698215484619
+        weight[11] = 9.5168733596802
+        weight[12] = 10.373730659485
+        weight[13] = 6.6616044044495
+        weight[14] = 10.260489463806
+        weight[15] = 10.287888526917
+        weight[16] = 10.289801597595
+        weight[17] = 10.405355453491
+        weight[18] = 10.138095855713
 
     weight[19] = 0
 
     assert os.path.exists(args.datadir), "Error: datadir (dataset directory) could not be loaded"
 
+    """
     co_transform = MyCoTransform(enc, augment=True, height=args.height)#1024)
     co_transform_val = MyCoTransform(enc, augment=False, height=args.height)#1024)
     dataset_train = cityscapes(args.datadir, co_transform, 'train')
@@ -141,6 +146,10 @@ def train(args, model, enc=False):
 
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
+    """
+
+    ### RELLIS-3D Dataloader
+    loader, loader_val = custom_datasets.setup_loaders(args)
 
     if args.cuda:
         weight = weight.cuda()
@@ -154,9 +163,9 @@ def train(args, model, enc=False):
         modeltxtpath = savedir + "/model_encoder.txt"
     else:
         automated_log_path = savedir + "/automated_log.txt"
-        modeltxtpath = savedir + "/model.txt"    
+        modeltxtpath = savedir + "/model.txt"
 
-    if (not os.path.exists(automated_log_path)):    #dont add first line if it exists 
+    if (not os.path.exists(automated_log_path)):    #dont add first line if it exists
         with open(automated_log_path, "a") as myfile:
             myfile.write("Epoch\t\tTrain-loss\t\tTest-loss\t\tTrain-IoU\t\tTest-IoU\t\tlearningRate")
 
@@ -171,7 +180,7 @@ def train(args, model, enc=False):
 
     start_epoch = 1
     if args.resume:
-        #Must load weights, optimizer, epoch and best value. 
+        #Must load weights, optimizer, epoch and best value.
         if enc:
             filenameCheckpoint = savedir + '/checkpoint_enc.pth.tar'
         else:
@@ -199,9 +208,9 @@ def train(args, model, enc=False):
 
         epoch_loss = []
         time_train = []
-     
-        doIouTrain = args.iouTrain   
-        doIouVal =  args.iouVal      
+
+        doIouTrain = args.iouTrain
+        doIouVal =  args.iouVal
 
         if (doIouTrain):
             iouEvalTrain = iouEval(NUM_CLASSES)
@@ -213,7 +222,6 @@ def train(args, model, enc=False):
 
         model.train()
         for step, (images, labels) in enumerate(loader):
-
             start_time = time.time()
             #print (labels.size())
             #print (np.unique(labels.numpy()))
@@ -224,6 +232,7 @@ def train(args, model, enc=False):
                 labels = labels.cuda()
 
             inputs = Variable(images)
+            print(inputs.shape)
             targets = Variable(labels)
             outputs = model(inputs, only_encode=enc)
 
@@ -240,7 +249,7 @@ def train(args, model, enc=False):
             if (doIouTrain):
                 #start_time_iou = time.time()
                 iouEvalTrain.addBatch(outputs.max(1)[1].unsqueeze(1).data, targets.data)
-                #print ("Time to add confusion matrix: ", time.time() - start_time_iou)      
+                #print ("Time to add confusion matrix: ", time.time() - start_time_iou)
 
             #print(outputs.size())
             if args.visualize and args.steps_plot > 0 and step % args.steps_plot == 0:
@@ -262,17 +271,17 @@ def train(args, model, enc=False):
                 print ("Time to paint images: ", time.time() - start_time_plot)
             if args.steps_loss > 0 and step % args.steps_loss == 0:
                 average = sum(epoch_loss) / len(epoch_loss)
-                print(f'loss: {average:0.4} (epoch: {epoch}, step: {step})', 
+                print(f'loss: {average:0.4} (epoch: {epoch}, step: {step})',
                         "// Avg time/img: %.4f s" % (sum(time_train) / len(time_train) / args.batch_size))
 
-            
+
         average_epoch_loss_train = sum(epoch_loss) / len(epoch_loss)
-        
+
         iouTrain = 0
         if (doIouTrain):
             iouTrain, iou_classes = iouEvalTrain.getIoU()
             iouStr = getColorEntry(iouTrain)+'{:0.2f}'.format(iouTrain*100) + '\033[0m'
-            print ("EPOCH IoU on TRAIN set: ", iouStr, "%")  
+            print ("EPOCH IoU on TRAIN set: ", iouStr, "%")
 
         #Validate on 500 val images after each epoch of training
         print("----- VALIDATING - EPOCH", epoch, "-----")
@@ -291,7 +300,7 @@ def train(args, model, enc=False):
 
             inputs = Variable(images, volatile=True)    #volatile flag makes it free backward or outputs for eval
             targets = Variable(labels, volatile=True)
-            outputs = model(inputs, only_encode=enc) 
+            outputs = model(inputs, only_encode=enc)
 
             loss = criterion(outputs, targets[:, 0])
             epoch_loss_val.append(loss.data[0])
@@ -319,9 +328,9 @@ def train(args, model, enc=False):
                 print ("Time to paint images: ", time.time() - start_time_plot)
             if args.steps_loss > 0 and step % args.steps_loss == 0:
                 average = sum(epoch_loss_val) / len(epoch_loss_val)
-                print(f'VAL loss: {average:0.4} (epoch: {epoch}, step: {step})', 
+                print(f'VAL loss: {average:0.4} (epoch: {epoch}, step: {step})',
                         "// Avg time/img: %.4f s" % (sum(time_val) / len(time_val) / args.batch_size))
-                       
+
 
         average_epoch_loss_val = sum(epoch_loss_val) / len(epoch_loss_val)
         #scheduler.step(average_epoch_loss_val, epoch)  ## scheduler 1   # update lr if needed
@@ -330,19 +339,19 @@ def train(args, model, enc=False):
         if (doIouVal):
             iouVal, iou_classes = iouEvalVal.getIoU()
             iouStr = getColorEntry(iouVal)+'{:0.2f}'.format(iouVal*100) + '\033[0m'
-            print ("EPOCH IoU on VAL set: ", iouStr, "%") 
-           
+            print ("EPOCH IoU on VAL set: ", iouStr, "%")
+
 
         # remember best valIoU and save checkpoint
         if iouVal == 0:
             current_acc = -average_epoch_loss_val
         else:
-            current_acc = iouVal 
+            current_acc = iouVal
         is_best = current_acc > best_acc
         best_acc = max(current_acc, best_acc)
         if enc:
             filenameCheckpoint = savedir + '/checkpoint_enc.pth.tar'
-            filenameBest = savedir + '/model_best_enc.pth.tar'    
+            filenameBest = savedir + '/model_best_enc.pth.tar'
         else:
             filenameCheckpoint = savedir + '/checkpoint.pth.tar'
             filenameBest = savedir + '/model_best.pth.tar'
@@ -369,16 +378,16 @@ def train(args, model, enc=False):
             print(f'save: {filenamebest} (epoch: {epoch})')
             if (not enc):
                 with open(savedir + "/best.txt", "w") as myfile:
-                    myfile.write("Best epoch is %d, with Val-IoU= %.4f" % (epoch, iouVal))   
+                    myfile.write("Best epoch is %d, with Val-IoU= %.4f" % (epoch, iouVal))
             else:
                 with open(savedir + "/best_encoder.txt", "w") as myfile:
-                    myfile.write("Best epoch is %d, with Val-IoU= %.4f" % (epoch, iouVal))           
+                    myfile.write("Best epoch is %d, with Val-IoU= %.4f" % (epoch, iouVal))
 
         #SAVE TO FILE A ROW WITH THE EPOCH RESULT (train loss, val loss, train IoU, val IoU)
         #Epoch		Train-loss		Test-loss	Train-IoU	Test-IoU		learningRate
         with open(automated_log_path, "a") as myfile:
             myfile.write("\n%d\t\t%.4f\t\t%.4f\t\t%.4f\t\t%.4f\t\t%.8f" % (epoch, average_epoch_loss_train, average_epoch_loss_val, iouTrain, iouVal, usedLr ))
-    
+
     return(model)   #return model (convenience for encoder-decoder training)
 
 def save_checkpoint(state, is_best, filenameCheckpoint, filenameBest):
@@ -402,10 +411,10 @@ def main(args):
     model_file = importlib.import_module(args.model)
     model = model_file.Net(NUM_CLASSES)
     copyfile(args.model + ".py", savedir + '/' + args.model + ".py")
-    
+
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
-    
+
     if args.state:
         #if args.state is provided then load this state for training
         #Note: this only loads initialized weights. If you want to resume a training use "--resume" option!!
@@ -445,7 +454,7 @@ def main(args):
     #TO ACCESS MODEL IN DataParallel: next(model.children())
     #next(model.children()).decoder.apply(weights_init)
     #Reinitialize weights for decoder
-    
+
     next(model.children()).decoder.layers.apply(weights_init)
     next(model.children()).decoder.output_conv.apply(weights_init)
 
@@ -459,7 +468,7 @@ def main(args):
     if (not args.decoder):
         print("========== ENCODER TRAINING ===========")
         model = train(args, model, True) #Train encoder
-    #CAREFUL: for some reason, after training encoder alone, the decoder gets weights=0. 
+    #CAREFUL: for some reason, after training encoder alone, the decoder gets weights=0.
     #We must reinit decoder weights or reload network passing only encoder in order to train decoder
     print("========== DECODER TRAINING ===========")
     if (not args.state):
@@ -487,11 +496,11 @@ if __name__ == '__main__':
     parser.add_argument('--state')
 
     parser.add_argument('--port', type=int, default=8097)
-    parser.add_argument('--datadir', default=os.getenv("HOME") + "/datasets/cityscapes/")
+    parser.add_argument('--datadir', default=os.getenv("HOME") + "/dataset/Rellis-3D/")
     parser.add_argument('--height', type=int, default=512)
     parser.add_argument('--num-epochs', type=int, default=150)
     parser.add_argument('--num-workers', type=int, default=4)
-    parser.add_argument('--batch-size', type=int, default=6)
+    parser.add_argument('--batch_size', type=int, default=6)
     parser.add_argument('--steps-loss', type=int, default=50)
     parser.add_argument('--steps-plot', type=int, default=50)
     parser.add_argument('--epochs-save', type=int, default=0)    #You can use this value to save model every X epochs
@@ -501,7 +510,16 @@ if __name__ == '__main__':
     parser.add_argument('--visualize', action='store_true')
 
     parser.add_argument('--iouTrain', action='store_true', default=False) #recommended: False (takes more time to train otherwise)
-    parser.add_argument('--iouVal', action='store_true', default=True)  
-    parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
+    parser.add_argument('--iouVal', action='store_true', default=True)
+    parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training
 
+    parser.add_argument('--crop_size', type=int, default=512, help='training crop size')
+    parser.add_argument('--scale_min', type=float, default=0.5, help='dynamically scale training images down to this size')
+    parser.add_argument('--scale_max', type=float, default=2.0, help='dynamically scale training images up to this size')
+    parser.add_argument('--color_aug', type=float, default=0.25, help='level of color augmentation')
+
+    parser.add_argument('--mode',type=str,default="train")
+    parser.add_argument('--cv', type=int, default=0, help='cross validation split')
+
+    torch.cuda.empty_cache()
     main(parser.parse_args())
