@@ -42,11 +42,12 @@ def colorize_mask(mask):
 
 class Rellis(data.Dataset):
 
-    def __init__(self, mode, datadir, image_transforms, sliding_crop=None,
-                 cv_split=None, eval_mode=False,
+    def __init__(self, mode, datadir, image_transforms, label_transforms,
+                 sliding_crop=None, cv_split=None, eval_mode=False,
                  eval_scales=None, eval_flip=False):
         self.mode = mode
-        self.image_transforms= image_transforms
+        self.image_transforms = image_transforms
+        self.label_transforms = label_transforms
         self.sliding_crop = sliding_crop
         self.cv_split = cv_split
         self.eval_mode = eval_mode
@@ -131,7 +132,7 @@ class Rellis(data.Dataset):
         return label
 
     def __getitem__(self, index):
-        print("getting an item")
+        #print("getting an item")
         item = self.files[index]
         img_name = item["name"]
         img_path = item["img"]
@@ -153,19 +154,24 @@ class Rellis(data.Dataset):
         # Image Transformation using torchvision.transforms
         if self.image_transforms is not None:
             img = self.image_transforms(img)  ## img is a tensor now
+        if self.label_transforms is not None:
+            mask = self.label_transforms(mask)
 
         # Convert mask to tensor as well
-        mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
+        #mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
 
         if self.mode == 'test':
             return img, mask, img_name, item['img']
+        return img, mask#, edgemap, img_name
 
+        """
         _edgemap = mask.numpy()
         _edgemap = edge_utils.mask_to_onehot(_edgemap, num_classes)
         _edgemap = edge_utils.onehot_to_binary_edges(_edgemap, 2, num_classes)
         edgemap = torch.from_numpy(_edgemap).float()
+        """
 
-        return img, mask#, edgemap, img_name
+
 
     def __len__(self):
         return len(self.files)

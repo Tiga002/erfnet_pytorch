@@ -232,18 +232,23 @@ def train(args, model, enc=False):
                 labels = labels.cuda()
 
             inputs = Variable(images)
-            print(inputs.shape)
+            #print("inputs.shape = {}".format(inputs.shape))
             targets = Variable(labels)
+            #print("targets.shape = {}".format(targets.shape))
             outputs = model(inputs, only_encode=enc)
+            #print("outputs.shape = {}".format(outputs.shape))
+            #print("targets[:, 0].long() = {}".format(targets[:, 0].shape))
 
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
 
             optimizer.zero_grad()
-            loss = criterion(outputs, targets[:, 0])
+            loss = criterion(outputs, targets[:, 0].long())
+            #print("loss= {}".format(loss))
             loss.backward()
             optimizer.step()
 
-            epoch_loss.append(loss.data[0])
+            #epoch_loss.append(loss.data[0])
+            epoch_loss.append(loss.item())
             time_train.append(time.time() - start_time)
 
             if (doIouTrain):

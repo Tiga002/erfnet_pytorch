@@ -36,6 +36,12 @@ def setup_loaders(args):
         transforms.ToTensor(),
         transforms.Normalize((0.496588, 0.59493099, 0.53358843), (0.496588, 0.59493099, 0.53358843))])
 
+    label_transforms = transforms.Compose([
+        transforms.RandomResizedCrop(args.crop_size,(args.scale_min,args.scale_max)),
+        transforms.Resize(args.crop_size),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()])
+
     """
     Create Dataset Instances:
     If: mode = train THEN
@@ -51,12 +57,14 @@ def setup_loaders(args):
             'train',
             datadir = args.datadir,
             image_transforms = train_image_transforms,
+            label_transforms = label_transforms,
             cv_split = args.cv)
 
         validation_set = rellis.Rellis(
             'val',
             datadir = args.datadir,
             image_transforms = validate_image_transforms,
+            label_transforms = label_transforms,
             cv_split = args.cv)
 
         training_set_loader = DataLoader(training_set,
@@ -75,6 +83,7 @@ def setup_loaders(args):
             mode = 'test',
             datadir = args.datadir,
             image_transforms = test_image_transforms,
+            label_transforms = label_transforms,
             cv_split = args.cv)
 
         testing_set_loader = DataLoader(testing_set,
