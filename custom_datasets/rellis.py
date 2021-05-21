@@ -58,6 +58,7 @@ class Rellis(data.Dataset):
 
         self.root = datadir
         self.list_path = list_paths[mode]
+        #self.list_root_path = '/floyd/home/'
         # List containing all the image
         self.img_list = [line.strip().split() for line in open(self.root+self.list_path)]
         # Read them with our own method
