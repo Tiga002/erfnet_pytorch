@@ -70,7 +70,7 @@ class MyCoTransform(object):
         if (self.enc):
             target = Resize(int(self.height/8), Image.NEAREST)(target)
         target = ToLabel()(target)
-        target = Relabel(255, 19)(target)
+        target = Relabel(255, 19)(target) # Replace 255 with 19
 
         return input, target
 
@@ -149,7 +149,7 @@ def train(args, model, enc=False):
     """
 
     ### RELLIS-3D Dataloader
-    loader, loader_val = custom_datasets.setup_loaders(args)
+    loader, loader_val = custom_datasets.setup_loaders(args, enc)
 
     if args.cuda:
         weight = weight.cuda()
@@ -242,7 +242,8 @@ def train(args, model, enc=False):
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
 
             optimizer.zero_grad()
-            loss = criterion(outputs, targets[:, 0].long())
+            loss = criterion(outputs, targets[:, 0])
+            #loss = criterion(outputs, targets[:, 0].long())
             #print("loss= {}".format(loss))
             loss.backward()
             optimizer.step()
@@ -502,7 +503,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--port', type=int, default=8097)
     parser.add_argument('--datadir', default=os.getenv("HOME") + "/dataset/Rellis-3D/")
-    parser.add_argument('--height', type=int, default=512)
+    parser.add_argument('--height', type=int, default=(512,1024))
     parser.add_argument('--num-epochs', type=int, default=150)
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch_size', type=int, default=6)

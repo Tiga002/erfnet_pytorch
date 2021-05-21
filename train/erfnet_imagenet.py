@@ -20,13 +20,13 @@ class DownsamplerBlock (nn.Module):
         output = torch.cat([self.conv(input), self.pool(input)], 1)
         output = self.bn(output)
         return F.relu(output)
-    
+
 
 class non_bottleneck_1d (nn.Module):
-    def __init__(self, chann, dropprob, dilated):        
+    def __init__(self, chann, dropprob, dilated):
         super().__init__()
 
-        
+
         self.conv3x1_1 = nn.Conv2d(chann, chann, (3, 1), stride=1, padding=(1,0), bias=True)
 
         self.conv1x3_1 = nn.Conv2d(chann, chann, (1,3), stride=1, padding=(0,1), bias=True)
@@ -35,12 +35,12 @@ class non_bottleneck_1d (nn.Module):
         self.conv3x1_2 = nn.Conv2d(chann, chann, (3, 1), stride=1, padding=(1*dilated,0), bias=True, dilation = (dilated,1))
 
         self.conv1x3_2 = nn.Conv2d(chann, chann, (1,3), stride=1, padding=(0,1*dilated), bias=True, dilation = (1, dilated))
-        
+
         self.bn1 = nn.BatchNorm2d(chann, eps=1e-03)
         self.bn2 = nn.BatchNorm2d(chann, eps=1e-03)
 
         self.dropout = nn.Dropout2d(dropprob)
-        
+
 
     def forward(self, input):
 
@@ -57,7 +57,7 @@ class non_bottleneck_1d (nn.Module):
 
         if (self.dropout.p != 0):
             output = self.dropout(output)
-        
+
         return F.relu(output+input)    #+input = identity (residual connection)
 
 
@@ -71,7 +71,7 @@ class Encoder(nn.Module):
         self.layers.append(DownsamplerBlock(16,64))
 
         for x in range(0, 5):    #5 times
-           self.layers.append(non_bottleneck_1d(64, 0.1, 1))  
+           self.layers.append(non_bottleneck_1d(64, 0.1, 1))
 
         self.layers.append(DownsamplerBlock(64,128))
 
@@ -127,5 +127,3 @@ class ERFNet(nn.Module):
         output = self.features(input)
         output = self.classifier(output)
         return output
-
-

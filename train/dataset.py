@@ -94,6 +94,7 @@ class cityscapes(Dataset):
         if self.co_transform is not None:
             image, label = self.co_transform(image, label)
 
+        # Debug:
         return image, label
 
     def __len__(self):

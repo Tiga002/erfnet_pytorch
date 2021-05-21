@@ -14,7 +14,7 @@ import logging
 import json
 import torchvision.transforms as transforms
 import custom_datasets.edge_utils as edge_utils
-
+from custom_datasets.custom_transformation import JointAugmentation, LabelTransform
 num_classes = 20
 ignore_label = 0
 #current_path = pathlib.Path.absolute()
@@ -42,10 +42,12 @@ def colorize_mask(mask):
 
 class Rellis(data.Dataset):
 
-    def __init__(self, mode, datadir, image_transforms, label_transforms,
+    def __init__(self, mode, datadir, joint_image_label_transforms=None,
+                 image_transforms=None, label_transforms=None,
                  sliding_crop=None, cv_split=None, eval_mode=False,
                  eval_scales=None, eval_flip=False):
-        self.mode = mode
+        self.mode = mode,
+        self.joint_image_label_transforms = joint_image_label_transforms
         self.image_transforms = image_transforms
         self.label_transforms = label_transforms
         self.sliding_crop = sliding_crop
@@ -152,6 +154,8 @@ class Rellis(data.Dataset):
         mask = Image.fromarray(mask_copy.astype(np.uint8))
 
         # Image Transformation using torchvision.transforms
+        if self.joint_image_label_transforms is not None:
+            img, mask = self.joint_image_label_transforms(img, mask)
         if self.image_transforms is not None:
             img = self.image_transforms(img)  ## img is a tensor now
         if self.label_transforms is not None:
@@ -162,6 +166,10 @@ class Rellis(data.Dataset):
 
         if self.mode == 'test':
             return img, mask, img_name, item['img']
+
+        # Debug:
+        #print("[DEBUG] image size = {}".format(img.shape))
+        #print("[DEBUG] mask size = {}".format(mask.shape))
         return img, mask#, edgemap, img_name
 
         """
