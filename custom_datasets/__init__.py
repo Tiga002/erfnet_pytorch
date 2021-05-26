@@ -37,7 +37,7 @@ def setup_loaders(args, enc=False):
             #transforms.GaussianBlur(4,),
             transforms.ToTensor(),
             transforms.Normalize((0.496588, 0.59493099, 0.53358843), (0.496588, 0.59493099, 0.53358843))])
-        train_label_transforms = LabelTransform(enc, height=args.height)
+        train_label_transforms = LabelTransform(enc, height=args.label_resize_height)
 
         training_set = rellis.Rellis(
             'train',
@@ -57,7 +57,7 @@ def setup_loaders(args, enc=False):
         validate_image_transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.496588, 0.59493099, 0.53358843), (0.496588, 0.59493099, 0.53358843))])
-        validate_label_transforms = LabelTransform(enc, height=args.height)
+        validate_label_transforms = LabelTransform(enc, height=args.label_resize_height)
 
         validation_set = rellis.Rellis(
             'val',
@@ -80,7 +80,7 @@ def setup_loaders(args, enc=False):
         test_image_transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.496588, 0.59493099, 0.53358843), (0.496588, 0.59493099, 0.53358843))])
-        test_label_transforms = LabelTransform(enc, height=args.height)
+        test_label_transforms = LabelTransform(enc, height=args.label_resize_height)
 
         testing_set = rellis.Rellis(
             mode = 'test',

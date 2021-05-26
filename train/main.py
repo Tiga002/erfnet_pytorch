@@ -504,7 +504,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--port', type=int, default=8097)
     parser.add_argument('--datadir', default=os.getenv("HOME") + "/dataset/Rellis-3D/")
-    parser.add_argument('--height', type=int, default=(512,1024))
+    parser.add_argument('--height', type=int, default=(360,640))
     parser.add_argument('--num-epochs', type=int, default=150)
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch_size', type=int, default=6)
@@ -520,7 +520,8 @@ if __name__ == '__main__':
     parser.add_argument('--iouVal', action='store_true', default=True)
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training
 
-    parser.add_argument('--crop_size', type=int, default=512, help='training crop size')
+    parser.add_argument('--crop_size', type=int, default=360, help='training crop size')
+    parser.add_argument('--label_resize_height', type=int, default=360, help='futher resize label height')
     parser.add_argument('--scale_min', type=float, default=0.5, help='dynamically scale training images down to this size')
     parser.add_argument('--scale_max', type=float, default=2.0, help='dynamically scale training images up to this size')
     parser.add_argument('--color_aug', type=float, default=0.25, help='level of color augmentation')
