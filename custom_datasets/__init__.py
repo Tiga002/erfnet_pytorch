@@ -80,15 +80,15 @@ def setup_loaders(args, enc=False):
         test_image_transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.496588, 0.59493099, 0.53358843), (0.496588, 0.59493099, 0.53358843))])
-        test_label_transforms = LabelTransform(enc, height=args.label_resize_height)
+        test_label_transforms = LabelTransform(enc)#, height=args.label_resize_height)
 
         testing_set = rellis.Rellis(
-            mode = 'test',
+            'test',
             datadir = args.datadir,
             joint_image_label_transforms = test_image_label_transforms,
             image_transforms = test_image_transforms,
             label_transforms = test_label_transforms,
-            cv_split = args.cv)
+            cv_split = None)
 
         testing_set_loader = DataLoader(testing_set,
                                         batch_size=args.batch_size,

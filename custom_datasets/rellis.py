@@ -46,7 +46,7 @@ class Rellis(data.Dataset):
                  image_transforms=None, label_transforms=None,
                  sliding_crop=None, cv_split=None, eval_mode=False,
                  eval_scales=None, eval_flip=False):
-        self.mode = mode,
+        self.mode = mode
         self.joint_image_label_transforms = joint_image_label_transforms
         self.image_transforms = image_transforms
         self.label_transforms = label_transforms
@@ -164,7 +164,6 @@ class Rellis(data.Dataset):
 
         # Convert mask to tensor as well
         #mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-
         if self.mode == 'test':
             return img, mask, img_name, item['img']
 
